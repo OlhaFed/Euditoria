@@ -139,6 +139,21 @@
   .profile-card.collapsed .profile-card-header svg { transform: rotate(180deg); }
   .profile-card.collapsed .profile-card-body { display: none; }
 
+  .header-title { display: flex; align-items: center; gap: 8px; position: relative; }
+  .info-icon-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; padding: 0; border: none; background: transparent;
+    color: var(--muted); cursor: pointer; flex-shrink: 0;
+  }
+  .info-icon-btn:hover { color: var(--mint-dark); }
+  .info-tooltip {
+    display: none; position: absolute; top: 100%; left: 0; margin-top: 12px;
+    background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 22px 24px; width: 320px; max-width: 80vw;
+    font-size: 0.95rem; line-height: 1.6; color: var(--text); z-index: 30;
+  }
+  .info-tooltip.show { display: block; }
+
   .profile-card-body { padding: 0 26px 28px; }
   .reg-date {
     text-align: right; font-size: 0.8rem; color: var(--muted);
@@ -322,7 +337,15 @@
 
           <div class="profile-card">
             <div class="profile-card-header" data-toggle>
-              <h3>Personal Information</h3>
+              <div class="header-title">
+                <h3>Personal Information</h3>
+                <button class="info-icon-btn" type="button" aria-label="Why we collect this information" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('show')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </button>
+                <div class="info-tooltip">
+                  We collect your personal information because your school or program of interest may require this information to process your application.
+                </div>
+              </div>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             <div class="profile-card-body">
@@ -346,7 +369,7 @@
               <div class="form-row cols-3">
                 <div class="form-field with-icon">
                   <label>Date of birth<span class="req">*</span></label>
-                  <input type="text" placeholder="dd / mm / yyyy" />
+                  <input type="text" class="date-input" placeholder="dd / mm / yyyy" inputmode="numeric" maxlength="14" />
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </div>
                 <div class="form-field">
@@ -371,7 +394,7 @@
                 </div>
                 <div class="form-field with-icon">
                   <label>Passport expiry date</label>
-                  <input type="text" placeholder="dd / mm / yyyy" />
+                  <input type="text" class="date-input" placeholder="dd / mm / yyyy" inputmode="numeric" maxlength="14" />
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </div>
               </div>
@@ -473,6 +496,27 @@
 <script>
   document.querySelectorAll('[data-toggle]').forEach(el => {
     el.addEventListener('click', () => el.closest('.profile-card').classList.toggle('collapsed'));
+  });
+
+  // Close info tooltips when clicking outside
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.info-tooltip.show').forEach(tip => {
+      if (!tip.previousElementSibling.contains(e.target) && !tip.contains(e.target)) {
+        tip.classList.remove('show');
+      }
+    });
+  });
+
+  // Auto-insert dd / mm / yyyy separators as the user types
+  document.querySelectorAll('.date-input').forEach(input => {
+    input.addEventListener('input', () => {
+      const digits = input.value.replace(/\D/g, '').slice(0, 8);
+      const parts = [];
+      if (digits.length > 0) parts.push(digits.slice(0, 2));
+      if (digits.length > 2) parts.push(digits.slice(2, 4));
+      if (digits.length > 4) parts.push(digits.slice(4, 8));
+      input.value = parts.join(' / ');
+    });
   });
 
   // Registration date = today
